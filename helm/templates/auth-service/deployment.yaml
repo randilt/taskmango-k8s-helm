@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "taskmango.fullname" . }}-auth
+  labels:
+    {{- include "taskmango.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.authService.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "taskmango.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: auth-service
+  template:
+    metadata:
+      labels:
+        {{- include "taskmango.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: auth-service
+    spec:
+      containers:
+        - name: auth-service
+          image: "{{ .Values.authService.image.repository }}:{{ .Values.authService.image.tag }}"
+          imagePullPolicy: {{ .Values.authService.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.authService.service.port }}
+              protocol: TCP
+            - name: probe
+              containerPort: {{ .Values.authService.service.probePort }}
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: {{ include "taskmango.fullname" . }}-auth-config
+          resources:
+            {{- toYaml .Values.authService.resources | nindent 12 }}
+        #   livenessProbe:
+        #     httpGet:
+        #       path: /healthz
+        #       port: probe
+        #     initialDelaySeconds: 30
+        #     periodSeconds: 10
+        #   readinessProbe:
+        #     httpGet:
+        #       path: /readyz
+        #       port: probe
+        #     initialDelaySeconds: 5
+        #     periodSeconds: 10
+      restartPolicy: Always

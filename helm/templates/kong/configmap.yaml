@@ -1,0 +1,34 @@
+{{- if .Values.kong.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "taskmango.fullname" . }}-kong-config
+  labels:
+    {{- include "taskmango.labels" . | nindent 4 }}
+data:
+  kong.yml: |
+    _format_version: "1.1"
+    services:
+      - name: api-service
+        url: http://{{ include "taskmango.fullname" . }}-api:{{ .Values.apiService.service.port }}
+        routes:
+          - name: api-route
+            paths: ["/api"]
+            strip_path: true
+            methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"]
+      - name: auth-service
+        url: http://{{ include "taskmango.fullname" . }}-auth:{{ .Values.authService.service.port }}
+        routes:
+          - name: auth-route
+            paths: ["/auth"]
+            strip_path: true
+            methods: ["POST"]
+    plugins:
+      - name: cors
+        config:
+          origins: ["*"]
+          methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"]
+          headers: ["Authorization", "Content-Type"]
+          credentials: false
+          max_age: 3600
+{{- end }}

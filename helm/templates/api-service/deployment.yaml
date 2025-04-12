@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "taskmango.fullname" . }}-api
+  labels:
+    {{- include "taskmango.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.apiService.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "taskmango.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: api-service
+  template:
+    metadata:
+      labels:
+        {{- include "taskmango.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: api-service
+    spec:
+      containers:
+        - name: api-service
+          image: "{{ .Values.apiService.image.repository }}:{{ .Values.apiService.image.tag }}"
+          imagePullPolicy: {{ .Values.apiService.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.apiService.service.port }}
+              protocol: TCP
+            - name: probe
+              containerPort: {{ .Values.apiService.service.probePort }}
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: {{ include "taskmango.fullname" . }}-api-config
+          resources:
+            {{- toYaml .Values.apiService.resources | nindent 12 }}
+        #   livenessProbe:
+        #     httpGet:
+        #       path: /healthz
+        #       port: probe
+        #     initialDelaySeconds: 30
+        #     periodSeconds: 10
+        #   readinessProbe:
+        #     httpGet:
+        #       path: /readyz
+        #       port: probe
+        #     initialDelaySeconds: 5
+        #     periodSeconds: 10
+      restartPolicy: Always

@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "taskmango.fullname" . }}-auth-config
+  labels:
+    {{- include "taskmango.labels" . | nindent 4 }}
+data:
+  app.env: |
+    DB_HOST={{ .Values.global.database.host }}
+    DB_PORT={{ .Values.global.database.port | quote }}
+    DB_USER={{ .Values.global.database.username }}
+    DB_PASSWORD={{ .Values.global.database.password | quote }}
+    DB_NAME={{ .Values.global.database.name }}
+    JWT_ISSUER={{ .Values.authService.env.JWT_ISSUER }}
+    JWT_AUDIENCE={{ .Values.authService.env.JWT_AUDIENCE }}
+    JWT_SIGNING_KEY={{ .Values.authService.env.JWT_SIGNING_KEY }}
+    JWT_VALIDITY={{ .Values.authService.env.JWT_VALIDITY }}
+    AUTH_PORT={{ .Values.authService.service.port | quote }}
+    PROBE_PORT={{ .Values.authService.service.probePort | quote }}

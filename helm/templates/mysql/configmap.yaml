@@ -1,0 +1,58 @@
+{{- if .Values.mysql.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "taskmango.fullname" . }}-mysql-init
+  labels:
+    {{- include "taskmango.labels" . | nindent 4 }}
+data:
+  init.sql: |
+    -- Create database
+    CREATE DATABASE IF NOT EXISTS {{ .Values.global.database.name }};
+
+    -- Use the database
+    USE {{ .Values.global.database.name }};
+
+    -- Create users table for authentication
+    CREATE TABLE IF NOT EXISTS users (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        username VARCHAR(255) NOT NULL UNIQUE,
+        password_hash VARCHAR(255) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        deleted_at TIMESTAMP NULL DEFAULT NULL
+    );
+
+    -- Create tasks table for task management functionality
+    CREATE TABLE IF NOT EXISTS tasks (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        status ENUM('TODO', 'IN_PROGRESS', 'COMPLETED') DEFAULT 'TODO',
+        due_date DATETIME,
+        priority ENUM('LOW', 'MEDIUM', 'HIGH') DEFAULT 'MEDIUM',
+        user_id INT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        deleted_at TIMESTAMP NULL DEFAULT NULL,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    );
+
+    -- Create tags table for organizing tasks
+    CREATE TABLE IF NOT EXISTS tags (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(50) NOT NULL UNIQUE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        deleted_at TIMESTAMP NULL DEFAULT NULL
+    );
+
+    -- Create task_tags junction table for many-to-many relationship
+    CREATE TABLE IF NOT EXISTS task_tags (
+        task_id INT NOT NULL,
+        tag_id INT NOT NULL,
+        PRIMARY KEY (task_id, tag_id),
+        FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE,
+        FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE
+    );
+{{- end }}
