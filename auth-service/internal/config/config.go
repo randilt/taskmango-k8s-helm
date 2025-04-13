@@ -3,6 +3,8 @@ package config
 import (
 	"fmt"
 	"log"
+	"os"
+	"strconv"
 	"time"
 
 	"github.com/spf13/viper"
@@ -11,17 +13,17 @@ import (
 )
 
 type Config struct {
-	DBHost         string `mapstructure:"DB_HOST"`
-	DBPort         int    `mapstructure:"DB_PORT"`
-	DBUser         string `mapstructure:"DB_USER"`
-	DBPassword     string `mapstructure:"DB_PASSWORD"`
-	DBName         string `mapstructure:"DB_NAME"`
-	JWTIssuer      string `mapstructure:"JWT_ISSUER"`
-	JWTAudience    string `mapstructure:"JWT_AUDIENCE"`
-	JWTSigningKey  string `mapstructure:"JWT_SIGNING_KEY"`
-	JWTValidity    int    `mapstructure:"JWT_VALIDITY"`
-	AuthPort       int    `mapstructure:"AUTH_PORT"`
-	ProbePort      int    `mapstructure:"PROBE_PORT"`
+	DBHost         string
+	DBPort         int
+	DBUser         string
+	DBPassword     string
+	DBName         string
+	JWTIssuer      string
+	JWTAudience    string
+	JWTSigningKey  string
+	JWTValidity    int
+	AuthPort       int
+	ProbePort      int
 }
 
 func (c *Config) AuthAddress() string {
@@ -32,29 +34,45 @@ func (c *Config) ProbeAddress() string {
 	return fmt.Sprintf(":%d", c.ProbePort)
 }
 
-func LoadConfig() (*Config, error) {
-	viper.AddConfigPath(".")
-	viper.SetConfigName("app")
-	viper.SetConfigType("env")
-
+func LoadConfig() *Config {
+	
+	viper.SetConfigFile(".env")
+	_ = viper.ReadInConfig()
+	
 	viper.AutomaticEnv()
 
-	// Set default values
-	viper.SetDefault("AUTH_PORT", 9090)
-	viper.SetDefault("PROBE_PORT", 9091)
-
-	if err := viper.ReadInConfig(); err != nil {
-		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
-			return nil, err
+	getInt := func(key string, defaultValue int) int {
+		if value := viper.GetString(key); value != "" {
+			if intVal, err := strconv.Atoi(value); err == nil {
+				return intVal
+			}
 		}
+		return defaultValue
 	}
 
-	var config Config
-	if err := viper.Unmarshal(&config); err != nil {
-		return nil, err
+	return &Config{
+		DBHost:        getEnv("DB_HOST", "localhost"),
+		DBPort:        getInt("DB_PORT", 3306),
+		DBUser:        getEnv("DB_USER", "root"),
+		DBPassword:    getEnv("DB_PASSWORD", ""),
+		DBName:        getEnv("DB_NAME", "taskmango_db"),
+		JWTIssuer:     getEnv("JWT_ISSUER", "auth-service"),
+		JWTAudience:   getEnv("JWT_AUDIENCE", "task-manager"),
+		JWTSigningKey: getEnv("JWT_SIGNING_KEY", "secret-key-change-me"),
+		JWTValidity:   getInt("JWT_VALIDITY", 3600),
+		AuthPort:      getInt("AUTH_PORT", 9090),
+		ProbePort:     getInt("PROBE_PORT", 9091),
 	}
+}
 
-	return &config, nil
+func getEnv(key, defaultValue string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	if value := viper.GetString(key); value != "" {
+		return value
+	}
+	return defaultValue
 }
 
 func InitDB(cfg *Config) (*gorm.DB, error) {

@@ -8,11 +8,8 @@ import (
 
 func main() {
 	// Load configuration
-	cfg, err := config.LoadConfig()
-	if err != nil {
-		log.Fatalf("Failed to load configuration: %v", err)
-	}
-
+	cfg := config.LoadConfig()
+	
 	// Initialize database
 	db, err := config.InitDB(cfg)
 	if err != nil {

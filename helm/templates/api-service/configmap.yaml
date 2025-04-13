@@ -5,15 +5,14 @@ metadata:
   labels:
     {{- include "taskmango.labels" . | nindent 4 }}
 data:
-  app.env: |
-    DB_HOST={{ .Values.global.database.host }}
-    DB_PORT={{ .Values.global.database.port | quote }}
-    DB_USER={{ .Values.global.database.username }}
-    DB_PASSWORD={{ .Values.global.database.password | quote }}
-    DB_NAME={{ .Values.global.database.name }}
-    JWT_ISSUER={{ .Values.apiService.env.JWT_ISSUER }}
-    JWT_AUDIENCE={{ .Values.apiService.env.JWT_AUDIENCE }}
-    JWT_SIGNING_KEY={{ .Values.apiService.env.JWT_SIGNING_KEY }}
-    JWT_VALIDITY={{ .Values.apiService.env.JWT_VALIDITY }}
-    API_PORT={{ .Values.apiService.service.port | quote }}
-    PROBE_PORT={{ .Values.apiService.service.probePort | quote }}
+  DB_HOST: {{ .Values.global.database.host | quote }}
+  DB_PORT: {{ .Values.global.database.port | quote }}
+  DB_USER: {{ .Values.global.database.username | quote }}
+  DB_PASSWORD: {{ .Values.global.database.password | quote }}
+  DB_NAME: {{ .Values.global.database.name | quote }}
+  JWT_ISSUER: {{ .Values.apiService.env.JWT_ISSUER | quote }}
+  JWT_AUDIENCE: {{ .Values.apiService.env.JWT_AUDIENCE | quote }}
+  JWT_SIGNING_KEY: {{ .Values.apiService.env.JWT_SIGNING_KEY | quote }}
+  JWT_VALIDITY: {{ .Values.apiService.env.JWT_VALIDITY | quote }}
+  API_PORT: {{ .Values.apiService.service.port | quote }}
+  PROBE_PORT: {{ .Values.apiService.service.probePort | quote }}

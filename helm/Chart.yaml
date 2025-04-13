@@ -9,7 +9,3 @@ dependencies:
     version: 9.10.1
     repository: https://charts.bitnami.com/bitnami
     condition: mysql.enabled
-  - name: kong
-    version: 2.x.x
-    repository: https://charts.konghq.com
-    condition: kong.enabled

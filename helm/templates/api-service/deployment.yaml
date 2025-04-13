@@ -32,16 +32,16 @@ spec:
                 name: {{ include "taskmango.fullname" . }}-api-config
           resources:
             {{- toYaml .Values.apiService.resources | nindent 12 }}
-        #   livenessProbe:
-        #     httpGet:
-        #       path: /healthz
-        #       port: probe
-        #     initialDelaySeconds: 30
-        #     periodSeconds: 10
-        #   readinessProbe:
-        #     httpGet:
-        #       path: /readyz
-        #       port: probe
-        #     initialDelaySeconds: 5
-        #     periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: probe
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: probe
+            initialDelaySeconds: 5
+            periodSeconds: 10
       restartPolicy: Always

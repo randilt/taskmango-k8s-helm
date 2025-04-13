@@ -35,7 +35,7 @@ apiService:
   image:
     repository: randiltharusha/taskmango
     tag: apisvc-latest
-    pullPolicy: IfNotPresent
+    pullPolicy: Always
   service:
     type: ClusterIP
     port: 8080
@@ -60,7 +60,7 @@ authService:
   image:
     repository: randiltharusha/taskmango
     tag: authsvc-latest
-    pullPolicy: IfNotPresent
+    pullPolicy: Always
   service:
     type: ClusterIP
     port: 9090
@@ -77,36 +77,6 @@ authService:
     JWT_AUDIENCE: "task-manager"
     JWT_SIGNING_KEY: "secret-key-change-me"
     JWT_VALIDITY: "3600"
-
-# Kong API Gateway configuration
-kong:
-  enabled: true
-  replicaCount: 1
-  image:
-    repository: kong
-    tag: "3.4"
-  resources:
-    requests:
-      memory: "256Mi"
-      cpu: "100m"
-    limits:
-      memory: "512Mi"
-      cpu: "500m"
-  proxy:
-    type: NodePort
-    http:
-      nodePort: 30080
-  admin:
-    enabled: true
-    http:
-      enabled: true
-      servicePort: 8001
-  ingressController:
-    enabled: true
-    installCRDs: false
-  env:
-    database: "off"
-    declarative_config: "/opt/kong/kong.yml"
 
 # Database initialization job
 initDb:
