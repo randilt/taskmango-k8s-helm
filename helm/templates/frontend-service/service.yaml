@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "taskmango.fullname" . }}-frontend
+  labels:
+    {{- include "taskmango.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.frontendService.service.type }}
+  ports:
+    - port: {{ .Values.frontendService.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "taskmango.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: frontend
